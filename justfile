@@ -1,14 +1,20 @@
 default: 
     just --list
 
-export LANGUAGE := "go"
-just_file := "$LANGUAGE.just"
+export language := env("SDK_LANG", "go")
+just_file := "$language.just"
 
-# clones a specific sample from the temporal $LANGUAGE samples, use this build upon what you want
+print:
+    @echo LANGUAGE is {{language}}, just_file is {{just_file}}
+
+# clones a specific sample from the temporal samples, use this build upon what you want
 copy SAMPLE:
-    git clone --filter=blob:none --sparse org-56493103@github.com:temporalio/samples-$LANGUAGE.git code 
-    cd code;  
-    git sparse-checkout set {{SAMPLE}}
+    @echo Cloning github.com:temporalio/samples-{{language}}.git
+    git clone --filter=blob:none --sparse org-56493103@github.com:temporalio/samples-{{language}}.git code 
+    cd code && git sparse-checkout set {{SAMPLE}}
+
+    echo "Finished Cloning, initialising"
+    @just --justfile {{just_file}} init {{SAMPLE}}
 
 start-temporal:
     temporal server start-dev --db-filename local
