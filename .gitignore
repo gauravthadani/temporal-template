@@ -1,3 +1,6 @@
 code/
 local
 api_key
+ca.pem
+ca.key
+.idea/
