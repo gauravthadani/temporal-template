@@ -17,8 +17,8 @@ async def main():
     client = await Client.connect(
         "localhost:7233",
         # Use our interceptor
-        # interceptors=[interceptor.ContextPropagationInterceptor()],
-        # data_converter=encryption_data_converter,
+        interceptors=[interceptor.ContextPropagationInterceptor()],
+        data_converter=encryption_data_converter,
     )
 
     # Run a worker for the workflow

@@ -1,3 +1,4 @@
+import asyncio
 from datetime import timedelta
 
 from temporalio import workflow
@@ -17,6 +18,11 @@ class SayHelloWorkflow:
         workflow.logger.info(f"Workflow called by user {user_id.get()}")
 
         # Wait for signal then run activity
+
+        # result = asyncio.run(await workflow.execute_activity(
+        #     say_hello_activity, name, start_to_close_timeout=timedelta(minutes=5)
+        # ))
+
         await workflow.wait_condition(lambda: self._complete)
         return await workflow.execute_activity(
             say_hello_activity, name, start_to_close_timeout=timedelta(minutes=5)
