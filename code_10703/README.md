@@ -2,8 +2,8 @@
 
 This is built from from a set of samples to include
 
-- interceptor
-- encryption
+- interceptor - Context Propagation Interceptor Sample
+- encryption - data converter + codec server
 - couple of activities
   - 1 constantly failing 
 
