@@ -4,7 +4,7 @@ from datetime import timedelta
 from temporalio import workflow
 
 with workflow.unsafe.imports_passed_through():
-    from context_propagation.activities import say_hello_activity
+    from context_propagation.activities import say_hello_activity, random_failing_activity
     from context_propagation.shared import user_id
 
 
@@ -19,9 +19,11 @@ class SayHelloWorkflow:
 
         # Wait for signal then run activity
 
-        # result = asyncio.run(await workflow.execute_activity(
-        #     say_hello_activity, name, start_to_close_timeout=timedelta(minutes=5)
-        # ))
+        asyncio.create_task(workflow.execute_activity(
+            activity=random_failing_activity, args=[name], start_to_close_timeout=timedelta(minutes=5)
+        ))
+
+        # handle = await
 
         await workflow.wait_condition(lambda: self._complete)
         return await workflow.execute_activity(

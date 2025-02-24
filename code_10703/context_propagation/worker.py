@@ -25,7 +25,7 @@ async def main():
     async with Worker(
         client,
         task_queue="context-propagation-task-queue",
-        activities=[activities.say_hello_activity],
+        activities=[activities.say_hello_activity, activities.random_failing_activity],
         workflows=[workflows.SayHelloWorkflow],
     ):
         # Wait until interrupted
