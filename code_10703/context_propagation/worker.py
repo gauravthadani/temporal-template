@@ -5,6 +5,7 @@ from temporalio.client import Client
 from temporalio.worker import Worker
 
 from context_propagation import activities, interceptor, workflows
+from context_propagation.shared import encryption_data_converter
 
 interrupt_event = asyncio.Event()
 
@@ -16,7 +17,8 @@ async def main():
     client = await Client.connect(
         "localhost:7233",
         # Use our interceptor
-        interceptors=[interceptor.ContextPropagationInterceptor()],
+        # interceptors=[interceptor.ContextPropagationInterceptor()],
+        # data_converter=encryption_data_converter,
     )
 
     # Run a worker for the workflow

@@ -9,13 +9,14 @@ from temporalio.converter import (
     EncodingPayloadConverter,
 )
 
+from context_propagation.codec import EncryptionCodec
 
 import temporalio.converter
 
 HEADER_KEY = "__my_user_id"
 
 user_id: ContextVar[Optional[str]] = ContextVar("user_id", default=None)
-#
+
 # class GreetingEncodingPayloadConverter(EncodingPayloadConverter):
 #     @property
 #     def encoding(self) -> str:
@@ -24,7 +25,7 @@ user_id: ContextVar[Optional[str]] = ContextVar("user_id", default=None)
 #     def to_payload(self, value: Any) -> Optional[Payload]:
 #             return Payload(
 #                 metadata={"encoding": self.encoding.encode(), "is_input": b"true"},
-#                 data=value.name.encode(),)
+#                 data=value.encode(),)
 #
 #     def from_payload(self, payload: Payload, type_hint: Optional[Type] = None) -> Any:
 #             return payload.data.decode()
@@ -41,3 +42,8 @@ user_id: ContextVar[Optional[str]] = ContextVar("user_id", default=None)
 #     temporalio.converter.default(),
 #     payload_converter_class=GreetingPayloadConverter,
 # )
+
+encryption_data_converter = dataclasses.replace(
+    temporalio.converter.default(),
+    payload_codec=EncryptionCodec()
+)

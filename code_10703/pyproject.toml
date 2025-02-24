@@ -5,8 +5,6 @@ description = "Temporal.io Python SDK samples"
 license = "MIT"
 authors = ["Temporal Technologies Inc <sdk@temporal.io>"]
 readme = "README.md"
-homepage = "https://github.com/temporalio/samples-python"
-repository = "https://github.com/temporalio/samples-python"
 documentation = "https://docs.temporal.io/docs/python"
 packages = [
     { include = "**/*.py", from = "."  }
@@ -17,65 +15,24 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-temporalio = "^1.10.0"
+temporalio = "^1.9.0"
+aiohttp = "^3.11.12"
+encryption = "^0.0.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
 isort = "^5.10.1"
-mypy = "^1.4.1"
+mypy = "^0.981"
 pytest = "^7.1.2"
 pytest-asyncio = "^0.18.3"
 frozenlist = "^1.4.0"
-types-pyyaml = "^6.0.12.20241230"
-
 
 # All sample-specific dependencies are in optional groups below, named after the
 # sample they apply to
 
-[tool.poetry.group.bedrock]
-optional = true
-[tool.poetry.group.bedrock.dependencies]
-boto3 = "^1.34.92"
-
-[tool.poetry.group.dsl]
-optional = true
-dependencies = { pyyaml = "^6.0.1", types-pyyaml = "^6.0.12", dacite = "^1.8.1" }
-
-[tool.poetry.group.encryption]
+[tool.poetry.group.context_propagation]
 optional = true
 dependencies = { cryptography = "^38.0.1", aiohttp = "^3.8.1" }
-
-[tool.poetry.group.gevent]
-optional = true
-dependencies = { gevent = { version = "^23.9.1", python = ">=3.8" } }
-
-[tool.poetry.group.langchain]
-optional = true
-[tool.poetry.group.langchain.dependencies]
-langchain =  {version = "^0.1.7", python = ">=3.8.1,<4.0"}
-langchain-openai = {version = "^0.0.6", python = ">=3.8.1,<4.0"}
-openai = "^1.4.0"
-fastapi = "^0.105.0"
-tqdm = "^4.62.0"
-uvicorn = { version = "^0.24.0.post1", extras = ["standard"]}
-
-[tool.poetry.group.open_telemetry]
-optional = true
-[tool.poetry.group.open_telemetry.dependencies]
-temporalio = { version = "*", extras = ["opentelemetry"] }
-opentelemetry-exporter-otlp-proto-grpc = "1.18.0"
-
-[tool.poetry.group.pydantic_converter]
-optional = true
-dependencies = { pydantic = "^2.10.6" }
-
-[tool.poetry.group.sentry]
-optional = true
-dependencies = { sentry-sdk = "^1.11.0" }
-
-[tool.poetry.group.trio_async]
-optional = true
-dependencies = { trio = "^0.28.0", trio-asyncio = "^0.15.0" }
 
 [tool.poe.tasks]
 format = [{cmd = "black ."}, {cmd = "isort ."}]

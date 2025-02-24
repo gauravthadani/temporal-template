@@ -3,6 +3,7 @@ import logging
 
 from temporalio.client import Client
 
+from context_propagation.shared import encryption_data_converter
 from context_propagation import interceptor, shared, workflows
 
 
@@ -16,13 +17,14 @@ async def main():
     client = await Client.connect(
         "localhost:7233",
         # Use our interceptor
-        interceptors=[interceptor.ContextPropagationInterceptor()],
+        # interceptors=[interceptor.ContextPropagationInterceptor()],
+        # data_converter=encryption_data_converter
     )
 
     # Start workflow, send signal, wait for completion, issue query
     handle = await client.start_workflow(
-        workflows.SayHelloWorkflow.run,
-        "Temporal",
+        workflow=workflows.SayHelloWorkflow.run,
+        args=["Temporal"],
         id=f"context-propagation-workflow-id",
         task_queue="context-propagation-task-queue",
     )
