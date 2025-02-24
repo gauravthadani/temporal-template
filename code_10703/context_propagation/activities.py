@@ -6,7 +6,7 @@ from context_propagation import shared
 @activity.defn
 async def say_hello_activity(name: str) -> str:
     activity.logger.info(f"Activity called by user {shared.user_id.get()}")
-    await asyncio.sleep(30)
+    await asyncio.sleep(300)
     return f"Hello, {name}"
 
 

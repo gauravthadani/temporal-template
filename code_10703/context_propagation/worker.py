@@ -27,6 +27,7 @@ async def main():
         task_queue="context-propagation-task-queue",
         activities=[activities.say_hello_activity, activities.random_failing_activity],
         workflows=[workflows.SayHelloWorkflow],
+        # max_concurrent_activities=2
     ):
         # Wait until interrupted
         logging.info("Worker started, ctrl+c to exit")

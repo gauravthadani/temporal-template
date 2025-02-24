@@ -7,6 +7,7 @@ from temporalio.converter import (
     CompositePayloadConverter,
     DefaultPayloadConverter,
     EncodingPayloadConverter,
+    DataConverter
 )
 
 from context_propagation.codec import EncryptionCodec
@@ -43,7 +44,13 @@ user_id: ContextVar[Optional[str]] = ContextVar("user_id", default=None)
 #     payload_converter_class=GreetingPayloadConverter,
 # )
 
-encryption_data_converter = dataclasses.replace(
-    temporalio.converter.default(),
-    payload_codec=EncryptionCodec()
+# encryption_data_converter = dataclasses.replace(
+#     temporalio.converter.default(),
+#     payload_codec=EncryptionCodec(),
+#     failure_converter=temporalio.converter.DefaultFailureConverterWithEncodedAttributes(),
+# )
+
+encryption_data_converter = DataConverter(
+    failure_converter_class=temporalio.converter.DefaultFailureConverterWithEncodedAttributes,
+    payload_codec=EncryptionCodec(),
 )

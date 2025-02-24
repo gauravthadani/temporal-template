@@ -2,6 +2,7 @@ import asyncio
 from datetime import timedelta
 
 from temporalio import workflow
+from temporalio.common import RetryPolicy
 
 with workflow.unsafe.imports_passed_through():
     from context_propagation.activities import say_hello_activity, random_failing_activity
@@ -19,8 +20,14 @@ class SayHelloWorkflow:
 
         # Wait for signal then run activity
 
+
         asyncio.create_task(workflow.execute_activity(
-            activity=random_failing_activity, args=[name], start_to_close_timeout=timedelta(minutes=5)
+            activity=random_failing_activity, args=[name],
+            start_to_close_timeout=timedelta(minutes=5),
+            retry_policy=RetryPolicy(initial_interval=timedelta(seconds=10),
+                                     backoff_coefficient=1.2,
+                                     maximum_interval=timedelta(seconds=30)),
+
         ))
 
         # handle = await
