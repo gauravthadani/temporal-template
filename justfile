@@ -17,6 +17,10 @@ copy SAMPLE:
     echo "Finished Cloning, initialising"
     @just --justfile {{just_file}} init {{SAMPLE}}
 
+create-new NAME:
+    mkdir code
+    @just --justfile {{just_file}} create-new {{NAME}}
+
 [group("temporal")]
 start-temporal:
     temporal server start-dev --db-filename local
