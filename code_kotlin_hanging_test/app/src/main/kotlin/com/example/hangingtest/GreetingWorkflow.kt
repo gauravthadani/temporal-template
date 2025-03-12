@@ -26,7 +26,7 @@ class GreetingWorkflowImpl : GreetingWorkflow {
     }
 
     override fun greeting(name: String): String {
-//        Workflow.sleep(Duration.ofSeconds(10))
+        Workflow.sleep(Duration.ofSeconds(20))
         return activities.composeGreeting("Salutations", name)
     }
 }

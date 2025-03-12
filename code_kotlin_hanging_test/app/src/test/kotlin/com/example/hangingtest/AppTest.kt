@@ -38,7 +38,7 @@ class AppTest {
         val handle = classUnderTest.spawn("Gaurav")
 
         println("pre sleep ${now()}")
-        testEnv.sleep(Duration.ofSeconds(0))
+        testEnv.sleep(Duration.ofSeconds(20))
 
         println("post sleep ${now()}")
 
