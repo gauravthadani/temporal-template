@@ -20,13 +20,13 @@ class GreetingWorkflowImpl : GreetingWorkflow {
         Workflow.newActivityStub(
             GreetingActivities::class.java,
             ActivityOptions.newBuilder()
-                .setStartToCloseTimeout(Duration.ofSeconds(10))
+                .setStartToCloseTimeout(Duration.ofSeconds(10000))
                 .build()
         )
     }
 
     override fun greeting(name: String): String {
-        Workflow.sleep(Duration.ofSeconds(10))
+//        Workflow.sleep(Duration.ofSeconds(10))
         return activities.composeGreeting("Salutations", name)
     }
 }
@@ -40,7 +40,7 @@ interface GreetingActivities {
 class GreetingActivitiesImpl : GreetingActivities {
     override fun composeGreeting(greeting: String, name: String): String {
 
-        sleep(Duration.ofSeconds(2))
+        sleep(Duration.ofSeconds(200))
         return "$greeting, $name!"
     }
 }

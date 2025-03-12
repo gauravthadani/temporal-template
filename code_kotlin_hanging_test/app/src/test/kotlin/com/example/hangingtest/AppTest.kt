@@ -10,6 +10,8 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Timeout
+import java.time.Duration
+import java.time.Instant.now
 import java.util.concurrent.TimeUnit
 
 
@@ -30,10 +32,15 @@ class AppTest {
     }
 
     @Test
-    @Timeout(value = 3, unit = TimeUnit.SECONDS)
+//    @Timeout(value = 3, unit = TimeUnit.SECONDS)
     fun greeting() {
         val classUnderTest = App(testEnv.workflowClient)
         val handle = classUnderTest.spawn("Gaurav")
+
+        println("pre sleep ${now()}")
+        testEnv.sleep(Duration.ofSeconds(0))
+
+        println("post sleep ${now()}")
 
         val result = classUnderTest.getResult(handle)
         assertEquals(result, "Salutations, Gaurav!")
