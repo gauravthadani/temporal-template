@@ -30,11 +30,24 @@ dependencies {
 
     implementation("io.temporal:temporal-sdk:1.28.1")
     implementation("io.temporal:temporal-kotlin:1.28.1")
+
+    implementation("org.slf4j:slf4j-api:1.7.32")
+    implementation("ch.qos.logback:logback-classic:1.2.6")
+
     testImplementation("io.temporal:temporal-testing:1.28.1")
 
 
     // This dependency is used by the application.
     implementation(libs.guava)
+}
+
+tasks {
+
+    jar{
+        manifest {
+            attributes["Main-Class"] = "com.example.hangingtest.AppKt"
+        }
+    }
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

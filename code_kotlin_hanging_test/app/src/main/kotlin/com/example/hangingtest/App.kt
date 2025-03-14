@@ -5,14 +5,14 @@ package com.example.hangingtest
 
 import io.temporal.api.common.v1.WorkflowExecution
 import io.temporal.client.WorkflowClient
+import io.temporal.client.WorkflowClientOptions
 import io.temporal.client.WorkflowOptions
 import io.temporal.serviceclient.WorkflowServiceStubs
-import io.temporal.worker.WorkerFactory
+import io.temporal.serviceclient.WorkflowServiceStubsOptions
 import java.util.*
 
 
 const val TASK_QUEUE = "HelloActivityTaskQueue"
-const val WORKFLOW_ID = "HelloActivityWorkflow"
 
 class App(private val client: WorkflowClient) {
 
@@ -37,21 +37,28 @@ class App(private val client: WorkflowClient) {
 
 fun main() {
 
-    val client = WorkflowClient.newInstance(WorkflowServiceStubs.newLocalServiceStubs())
-    val factory =
-        WorkerFactory.newInstance(client).also { factory ->
-            factory.newWorker(TASK_QUEUE).apply {
-                registerWorkflowImplementationTypes(GreetingWorkflowImpl::class.java)
-                registerActivitiesImplementations(GreetingActivitiesImpl())
+    val newServiceStubs = WorkflowServiceStubs.newServiceStubs(
+        WorkflowServiceStubsOptions {
+            addApiKey {
+                "add api key here"
             }
+            setEnableHttps(true)
+            setTarget("us-east-1.aws.api.temporal.io:7233")
         }
-
-
-    factory.start()
+    )
+    val client = WorkflowClient.newInstance(newServiceStubs, WorkflowClientOptions {
+        setNamespace("gaurav-test.a2dd6")
+    })
     val app = App(client)
-    val wf = app.spawn("Thadani")
-    val wf2 = app.spawn("Lewis")
-    val wf3 = app.spawn("Verstappen")
+
+    while (true){
+
+        val arg = "Thadani  ${UUID.randomUUID()}"
+        val wf = app.spawn(arg)
+
+        println("Created ${arg}")
+        Thread.sleep(15000)
+    }
 
 
 //    Promise.allOf(wf, wf2, wf3)
