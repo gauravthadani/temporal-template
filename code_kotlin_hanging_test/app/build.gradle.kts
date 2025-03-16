@@ -9,6 +9,7 @@ plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     alias(libs.plugins.kotlin.jvm)
 
+    id("com.github.johnrengelman.shadow") version "7.0.0"
     // Apply the application plugin to add support for building a CLI application in Java.
     application
 }
@@ -30,6 +31,7 @@ dependencies {
 
     implementation("io.temporal:temporal-sdk:1.28.1")
     implementation("io.temporal:temporal-kotlin:1.28.1")
+    implementation("com.github.ajalt.clikt:clikt:5.0.1")
 
     implementation("org.slf4j:slf4j-api:1.7.32")
     implementation("ch.qos.logback:logback-classic:1.2.6")
@@ -40,9 +42,18 @@ dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
 }
-
 tasks {
-
+    shadowJar {
+        archiveBaseName.set("app")
+        archiveClassifier.set("all")
+        archiveVersion.set("")
+        mergeServiceFiles()
+        from(project.sourceSets.main.get().resources.srcDirs) {
+            into("resources")
+        }
+    }
+}
+tasks {
     jar{
         manifest {
             attributes["Main-Class"] = "com.example.hangingtest.AppKt"
@@ -56,6 +67,9 @@ java {
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
+
+
+
 
 application {
     // Define the main class for the application.

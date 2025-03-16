@@ -9,7 +9,7 @@
     <logger name="io.grpc" level="FINEST"/>
     <logger name="io.grpc.netty" level="FINEST"/>
 
-    <root>
+    <root level="INFO">
         <appender-ref ref="FILE"/>
     </root>
 </configuration>

@@ -22,7 +22,7 @@ class GreetingWorkflowImpl : GreetingWorkflow {
         Workflow.newActivityStub(
             GreetingActivities::class.java,
             ActivityOptions.newBuilder()
-                .setStartToCloseTimeout(Duration.ofSeconds(10000))
+                .setStartToCloseTimeout(Duration.ofSeconds(60))
                 .setHeartbeatTimeout(Duration.ofSeconds(20))
                 .build()
         )
