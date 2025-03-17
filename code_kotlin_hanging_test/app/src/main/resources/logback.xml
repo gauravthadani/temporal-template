@@ -6,8 +6,8 @@
         </encoder>
     </appender>
 
-    <logger name="io.grpc" level="FINEST"/>
-    <logger name="io.grpc.netty" level="FINEST"/>
+<!--    <logger name="io.grpc" level="FINEST"/>-->
+<!--    <logger name="io.grpc.netty" level="FINEST"/>-->
 
     <root level="INFO">
         <appender-ref ref="FILE"/>

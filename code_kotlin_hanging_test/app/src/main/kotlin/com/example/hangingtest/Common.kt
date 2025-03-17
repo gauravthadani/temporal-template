@@ -1,5 +1,8 @@
 package com.example.hangingtest
 
+import com.sksamuel.hoplite.ConfigLoader
+import com.sksamuel.hoplite.ConfigLoaderBuilder
+import com.sksamuel.hoplite.addResourceSource
 import io.temporal.client.WorkflowClient
 import io.temporal.client.WorkflowClientOptions
 import io.temporal.serviceclient.SimpleSslContextBuilder
@@ -13,15 +16,27 @@ fun client(): WorkflowClient {
     val clientCert = readFileAsInputStream("ca.pem")
     val clientKey = readFileAsInputStream("ca.key")
 
+    val config = config()
+
     val newServiceStubs = WorkflowServiceStubs.newServiceStubs(
         WorkflowServiceStubsOptions {
             setSslContext(SimpleSslContextBuilder.forPKCS8(clientCert, clientKey).build())
             setEnableHttps(true)
-            setTarget("gaurav-test.a2dd6.tmprl.cloud:7233")
+            setTarget(config.endpoint)
         }
     )
 
     return WorkflowClient.newInstance(newServiceStubs, WorkflowClientOptions {
-        setNamespace("gaurav-test.a2dd6")
+        setNamespace(config.namespace)
     })
+}
+
+data class AppConfig(val namespace: String, val endpoint: String)
+
+fun config(): AppConfig {
+
+    return ConfigLoaderBuilder.default()
+        .addResourceSource("/config.json")
+        .build()
+        .loadConfigOrThrow<AppConfig>()
 }

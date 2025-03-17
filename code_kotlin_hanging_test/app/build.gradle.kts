@@ -35,7 +35,8 @@ dependencies {
 
     implementation("org.slf4j:slf4j-api:1.7.32")
     implementation("ch.qos.logback:logback-classic:1.2.6")
-
+    implementation("com.sksamuel.hoplite:hoplite-core:2.9.0")
+    implementation("com.sksamuel.hoplite:hoplite-json:2.9.0")
     testImplementation("io.temporal:temporal-testing:1.28.1")
 
 
