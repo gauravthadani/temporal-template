@@ -1,6 +1,5 @@
 package com.example.hangingtest
 
-import com.sksamuel.hoplite.ConfigLoader
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.addResourceSource
 import io.temporal.client.WorkflowClient
@@ -9,6 +8,7 @@ import io.temporal.serviceclient.SimpleSslContextBuilder
 import io.temporal.serviceclient.WorkflowServiceStubs
 import io.temporal.serviceclient.WorkflowServiceStubsOptions
 import java.io.InputStream
+import java.time.Duration
 
 fun readFileAsInputStream(fileName: String): InputStream = object {}.javaClass.getResourceAsStream("/$fileName")!!
 
@@ -23,6 +23,8 @@ fun client(): WorkflowClient {
             setSslContext(SimpleSslContextBuilder.forPKCS8(clientCert, clientKey).build())
             setEnableHttps(true)
             setTarget(config.endpoint)
+//            setGrpcReconnectFrequency(Duration.ofSeconds(300))
+            setGrpcReconnectFrequency(null)
         }
     )
 
