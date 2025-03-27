@@ -20,6 +20,7 @@ async def main():
     #     interceptors=[interceptor.ContextPropagationInterceptor()],
     #     data_converter=encryption_data_converter,
     # )
+    #
 
     parser = argparse.ArgumentParser(description="Use apikey with server")
     parser.add_argument(
@@ -47,9 +48,9 @@ async def main():
     async with Worker(
             client,
             task_queue="context-propagation-task-queue",
-            # activities=[activities.say_hello_activity, activities.random_failing_activity],
-            workflows=[workflows.SayHelloWorkflow],
-            # max_concurrent_activities=1
+            activities=[activities.say_hello_activity, activities.random_failing_activity],
+            # workflows=[workflows.SayHelloWorkflow],
+            max_concurrent_activities=1
     ):
         # Wait until interrupted
         logging.info("Worker started, ctrl+c to exit")

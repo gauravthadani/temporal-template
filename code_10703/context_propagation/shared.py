@@ -1,7 +1,13 @@
 import dataclasses
 from contextvars import ContextVar
+from datetime import datetime
 from typing import Any, Optional, Type
+from typing import Optional, Dict
 
+import temporalio.converter
+from context_propagation.codec import EncryptionCodec
+from pydantic import BaseModel, PositiveInt
+from pydantic import BaseModel, PositiveInt
 from temporalio.api.common.v1 import Payload
 from temporalio.converter import (
     CompositePayloadConverter,
@@ -10,11 +16,27 @@ from temporalio.converter import (
     DataConverter
 )
 
-from context_propagation.codec import EncryptionCodec
-
-import temporalio.converter
-
 HEADER_KEY = "__my_user_id"
+
+
+class User(BaseModel):
+    id: int  # Required integer field
+    name: str = "John Doe"  # Default value for name
+    signup_ts: Optional[datetime] = None  # Optional datetime field
+    tastes: Dict[str, PositiveInt]
+
+
+external_data = {
+    "id": 123,
+    "signup_ts": "2019-06-01 12:22",
+    "tastes": {
+        "wine": 9,
+        "cheese": 7,
+        "cabbage": "1",  # Will be converted to an integer
+    },
+}
+
+user = User(**external_data)
 
 user_id: ContextVar[Optional[str]] = ContextVar("user_id", default=None)
 

@@ -26,12 +26,26 @@ That loads all required dependencies. Then to run a sample, usually you just run
 
 Run worker
 ```bash
-    poetry run python context_propagation/worker.py
+  poetry run python context_propagation/worker.py \
+    --target-host us-east-1.aws.api.temporal.io:7233 \
+    --api-key $(cat /Users/gauravthadani/Work/Code/src/github.com/gauravthadani/temporal-template/api_key) \
+    --namespace gaurav-test.a2dd6
+```
+
+Run activity worker
+```bash
+  poetry run python context_propagation/activity_worker.py \
+    --target-host us-east-1.aws.api.temporal.io:7233 \
+    --api-key $(cat /Users/gauravthadani/Work/Code/src/github.com/gauravthadani/temporal-template/api_key) \
+    --namespace gaurav-test.a2dd6
 ```
 
 Run starter
 ```bash
-    poetry run python context_propagation/starter.py
+    poetry run python context_propagation/starter.py \
+    --target-host us-east-1.aws.api.temporal.io:7233 \
+    --api-key $(cat /Users/gauravthadani/Work/Code/src/github.com/gauravthadani/temporal-template/api_key) \
+    --namespace gaurav-test.a2dd6
 ```
 
 Run codec server
