@@ -19,13 +19,10 @@
 
 package io.temporal.samples.springboot;
 
-import static io.temporal.samples.springboot.hello.HelloDynamic.TASK_QUEUE;
-import static io.temporal.samples.springboot.hello.HelloDynamic.WORKFLOW_ID;
-
 import io.temporal.client.WorkflowClient;
-import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
 import io.temporal.samples.springboot.hello.model.Person;
+import java.util.function.Supplier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 public class SamplesController {
 
   @Autowired WorkflowClient client;
+  @Autowired Supplier<WorkflowStub> myWorkflow;
 
   @GetMapping("/hello")
   public String hello(Model model) {
@@ -51,9 +49,7 @@ public class SamplesController {
       produces = {MediaType.TEXT_HTML_VALUE})
   ResponseEntity<String> helloSample(@RequestBody Person person) {
 
-    WorkflowOptions workflowOptions =
-        WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).setWorkflowId(WORKFLOW_ID).build();
-    WorkflowStub workflow = client.newUntypedWorkflowStub("DynamicWF", workflowOptions);
+    WorkflowStub workflow = myWorkflow.get();
 
     // Start workflow execution and signal right after Pass in the workflow args and signal args
     workflow.signalWithStart(
