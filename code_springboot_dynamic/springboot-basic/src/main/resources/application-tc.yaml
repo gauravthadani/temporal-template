@@ -1,0 +1,6 @@
+spring.temporal:
+  namespace: default # https://docs.temporal.io/cloud/#temporal-cloud-namespace-id
+  connection:
+    target: localhost:7233
+
+# more configuration options https://github.com/temporalio/sdk-java/tree/master/temporal-spring-boot-autoconfigure#mtls
