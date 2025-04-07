@@ -22,10 +22,11 @@ package io.temporal.samples.springboot;
 import static io.temporal.samples.springboot.hello.HelloDynamic.TASK_QUEUE;
 import static io.temporal.samples.springboot.hello.HelloDynamic.WORKFLOW_ID;
 
+import io.temporal.api.enums.v1.WorkflowIdConflictPolicy;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
-import io.temporal.client.WorkflowStub;
-import java.util.function.Supplier;
+import io.temporal.samples.springboot.hello.GreetingWorkflow;
+import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -33,6 +34,7 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class TemporalSpringbootSamplesApplication {
+
   public static void main(String[] args) {
     SpringApplication.run(TemporalSpringbootSamplesApplication.class, args).start();
   }
@@ -40,11 +42,21 @@ public class TemporalSpringbootSamplesApplication {
   @Autowired WorkflowClient client;
 
   @Bean
-  public Supplier<WorkflowStub> MyWorkflow() {
-    return () -> {
+  public Function<String, GreetingWorkflow> MyWorkflow() {
+    return (arg) -> {
       WorkflowOptions workflowOptions =
-          WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).setWorkflowId(WORKFLOW_ID).build();
-      return client.newUntypedWorkflowStub("DynamicWF", workflowOptions);
+          WorkflowOptions.newBuilder()
+              .setTaskQueue(TASK_QUEUE)
+              .setWorkflowId(WORKFLOW_ID)
+              .setWorkflowIdConflictPolicy(
+                  WorkflowIdConflictPolicy.WORKFLOW_ID_CONFLICT_POLICY_TERMINATE_EXISTING)
+              .build();
+
+      GreetingWorkflow greetingWorkflow =
+          client.newWorkflowStub(GreetingWorkflow.class, workflowOptions);
+
+      WorkflowClient.start(greetingWorkflow::execute, arg);
+      return greetingWorkflow;
     };
   }
 }

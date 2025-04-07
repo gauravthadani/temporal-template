@@ -21,8 +21,10 @@ package io.temporal.samples.springboot;
 
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowStub;
+import io.temporal.client.WorkflowUpdateStage;
+import io.temporal.samples.springboot.hello.GreetingWorkflow;
 import io.temporal.samples.springboot.hello.model.Person;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,7 +37,7 @@ import org.springframework.web.bind.annotation.*;
 public class SamplesController {
 
   @Autowired WorkflowClient client;
-  @Autowired Supplier<WorkflowStub> myWorkflow;
+  @Autowired Function<String, GreetingWorkflow> myWorkflow;
 
   @GetMapping("/hello")
   public String hello(Model model) {
@@ -49,14 +51,12 @@ public class SamplesController {
       produces = {MediaType.TEXT_HTML_VALUE})
   ResponseEntity<String> helloSample(@RequestBody Person person) {
 
-    WorkflowStub workflow = myWorkflow.get();
-
-    // Start workflow execution and signal right after Pass in the workflow args and signal args
-    workflow.signalWithStart(
-        "greetingSignal", new Object[] {person.getFirstName()}, new Object[] {"Hello"});
+    GreetingWorkflow workflow = myWorkflow.apply("hello");
+    WorkflowStub stub = WorkflowStub.fromTyped(workflow);
+    stub.startUpdate("somename", WorkflowUpdateStage.ACCEPTED, Object.class, person.getFirstName());
 
     // Wait for workflow to finish getting the results
-    String result = workflow.getResult(String.class);
+    String result = stub.getResult(String.class);
 
     // bypass thymeleaf, don't return template name just result
     return new ResponseEntity<>("\"" + result + "\"", HttpStatus.OK);
