@@ -10,6 +10,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import java.time.Duration
+import java.time.Instant
 import java.time.Instant.now
 
 
@@ -23,20 +24,24 @@ class StarterTest {
             .build()
         testEnv = TestWorkflowEnvironment.newInstance(opts)
         val workerFactory = WorkerFactory.newInstance(testEnv.workflowClient)
-        val worker = workerFactory.newWorker("HelloActivityTaskQueue")
-        worker.registerWorkflowImplementationTypes(GreetingWorkflowImpl::class.java)
-        worker.registerActivitiesImplementations(GreetingActivitiesImpl())
+        workerFactory.newWorker("HelloActivityTaskQueue").apply {
+            registerWorkflowImplementationTypes(GreetingWorkflowImpl::class.java)
+            registerActivitiesImplementations(GreetingActivitiesImpl())
+        }
         workerFactory.start()
     }
 
     @Test
 //    @Timeout(value = 3, unit = TimeUnit.SECONDS)
     fun greeting() {
+        println("Starting Test at ${now()}")
+
         val classUnderTest = Starter(testEnv.workflowClient)
         val handle = classUnderTest.spawn("Gaurav")
 
+
         println("pre sleep ${now()}")
-        testEnv.sleep(Duration.ofSeconds(20))
+//        testEnv.sleep(Duration.ofSeconds(20))
 
         println("post sleep ${now()}")
 

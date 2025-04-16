@@ -1,6 +1,5 @@
 package com.example.hangingtest
 
-import io.temporal.activity.Activity
 import io.temporal.activity.ActivityInterface
 import io.temporal.activity.ActivityMethod
 import io.temporal.activity.ActivityOptions
@@ -9,6 +8,7 @@ import io.temporal.workflow.WorkflowInterface
 import io.temporal.workflow.WorkflowMethod
 import java.lang.Thread.sleep
 import java.time.Duration
+import java.time.Instant.now
 
 
 @WorkflowInterface
@@ -22,15 +22,25 @@ class GreetingWorkflowImpl : GreetingWorkflow {
         Workflow.newActivityStub(
             GreetingActivities::class.java,
             ActivityOptions.newBuilder()
-                .setStartToCloseTimeout(Duration.ofSeconds(60))
-                .setHeartbeatTimeout(Duration.ofSeconds(20))
+                .setStartToCloseTimeout(Duration.ofSeconds(30))
                 .build()
         )
     }
 
     override fun greeting(name: String): String {
-        Workflow.sleep(Duration.ofSeconds(2))
-        return activities.composeGreeting("Salutations", name)
+        println("Starting greeting at ${now()}")
+        return activities.composeGreeting("hello", name)
+    }
+}
+
+class GreetingActivitiesImpl : GreetingActivities {
+    override fun composeGreeting(greeting: String, name: String): String {
+        sleep(Duration.ofSeconds(2))
+        println("Greeting started: $greeting")
+        if (greeting == "namaste") {
+            throw Exception("I dont like this greeting")
+        }
+        return "$greeting, $name!"
     }
 }
 
@@ -40,12 +50,3 @@ interface GreetingActivities {
     fun composeGreeting(greeting: String, name: String): String
 }
 
-class GreetingActivitiesImpl : GreetingActivities {
-    override fun composeGreeting(greeting: String, name: String): String {
-        sleep(Duration.ofSeconds(5))
-        val context = Activity.getExecutionContext()
-        context.heartbeat("test");
-        sleep(Duration.ofSeconds(5))
-        return "$greeting, $name!"
-    }
-}

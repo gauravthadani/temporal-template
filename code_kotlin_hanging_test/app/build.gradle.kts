@@ -27,6 +27,8 @@ dependencies {
     // Use the JUnit 5 integration.
     testImplementation(libs.junit.jupiter.engine)
 
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("io.temporal:temporal-sdk:1.28.1")
@@ -37,6 +39,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.2.6")
     implementation("com.sksamuel.hoplite:hoplite-core:2.9.0")
     implementation("com.sksamuel.hoplite:hoplite-json:2.9.0")
+    implementation("io.micrometer:micrometer-registry-prometheus")
     testImplementation("io.temporal:temporal-testing:1.28.1")
 
 

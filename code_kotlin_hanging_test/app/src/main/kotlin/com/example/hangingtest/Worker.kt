@@ -9,7 +9,11 @@ import java.time.Duration
 
 
 fun worker() {
-    WorkerFactory.newInstance(client()).also { factory ->
+
+    WorkerFactory.newInstance(client(
+        withMetrics = true,
+        namespace = "gaurav-test.a2dd6"
+    )).also { factory ->
         factory.newWorker(TASK_QUEUE, WorkerOptions {
             setDefaultHeartbeatThrottleInterval(Duration.ofSeconds(10))
         }).apply {

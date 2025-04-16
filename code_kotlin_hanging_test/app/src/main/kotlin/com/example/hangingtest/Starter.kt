@@ -6,6 +6,8 @@ package com.example.hangingtest
 import io.temporal.api.common.v1.WorkflowExecution
 import io.temporal.client.WorkflowClient
 import io.temporal.client.WorkflowOptions
+import java.time.Duration
+import java.time.Instant.now
 import java.util.*
 
 
@@ -21,21 +23,28 @@ class Starter(private val client: WorkflowClient) {
         )
     }
 
-    fun spawn(arg: String): WorkflowExecution = WorkflowClient.start(workflowStub()::greeting, arg)
+    fun spawn(arg: String): WorkflowExecution {
+        println("Initiate workflow at ${now()}")
+        return WorkflowClient.start(workflowStub()::greeting, arg)
+    }
 
     fun getResult(handle: WorkflowExecution): String =
         client.newUntypedWorkflowStub(handle.workflowId).getResult(String::class.java)
 }
 
 fun starter() {
-    val starter = Starter(client())
+    val starter = Starter(client(namespace ="gaurav-test.a2dd6"))
+//
+//    while (true) {
+//        val arg = "Thadani  ${UUID.randomUUID()}"
+//        starter.spawn(arg)
+//        println("Created ${arg}")
+//        Thread.sleep(3000)
+//    }
 
-    while (true) {
-        val arg = "Thadani  ${UUID.randomUUID()}"
-        starter.spawn(arg)
-        println("Created ${arg}")
-        Thread.sleep(15000)
-    }
+    val arg = "Thadani  ${UUID.randomUUID()}"
+    starter.spawn(arg)
+    println("Created ${arg}")
 }
 
 
