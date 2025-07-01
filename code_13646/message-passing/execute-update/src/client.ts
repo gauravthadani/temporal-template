@@ -11,6 +11,7 @@ async function run() {
     taskQueue: 'my-task-queue',
     args: [],
     workflowId: 'workflow-' + nanoid(),
+
   });
   console.log(`Started workflow ${handle.workflowId}`);
 
