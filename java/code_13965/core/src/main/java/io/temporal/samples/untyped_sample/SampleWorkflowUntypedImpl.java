@@ -1,6 +1,8 @@
 package io.temporal.samples.untyped_sample;
 
 import io.temporal.activity.ActivityOptions;
+import io.temporal.failure.ActivityFailure;
+import io.temporal.failure.CanceledFailure;
 import io.temporal.samples.Booking;
 import io.temporal.workflow.*;
 import java.time.Duration;
@@ -19,13 +21,19 @@ public class SampleWorkflowUntypedImpl implements SampleWorkflowUntyped {
 
   public <T> Function<T, String> run(Function<T, String> first, Function<T, String> second) {
     return input -> {
-      var res = first.apply(input);
-      if (isCancelled && second != null) {
-        Workflow.newDetachedCancellationScope(
-                () -> {
-                  String unused = second.apply(input);
-                })
-            .run();
+      String res = null;
+      try {
+        res = first.apply(input);
+      } catch (ActivityFailure e) {
+        if (e.getCause() instanceof CanceledFailure) {
+          if (isCancelled && second != null) {
+            Workflow.newDetachedCancellationScope(
+                    () -> {
+                      String unused = second.apply(input);
+                    })
+                .run();
+          }
+        }
       }
       return res;
     };
@@ -39,14 +47,16 @@ public class SampleWorkflowUntypedImpl implements SampleWorkflowUntyped {
   @Override
   public Booking Start(String arg) {
     AtomicReference<Booking> booking = new AtomicReference<>();
-    Workflow.newCancellationScope(
+    scope =
+        Workflow.newCancellationScope(
             () -> {
               var res1 = run(toFunc("Activity1"), toFunc("CancelActivity1")).apply(arg);
               var res2 = run(toFunc("Sleep"), toFunc("CancelActivity2")).apply(arg);
               var res3 = run(toFunc("Activity3"), null).apply(arg);
               booking.set(new Booking(res1, res2, res3));
-            })
-        .run();
+            });
+
+    scope.run();
     return booking.get();
   }
 
