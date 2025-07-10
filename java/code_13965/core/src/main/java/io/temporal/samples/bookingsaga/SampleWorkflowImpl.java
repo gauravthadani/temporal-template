@@ -15,7 +15,7 @@ public class SampleWorkflowImpl implements SampleWorkflow {
   private final Activities activities = Workflow.newActivityStub(Activities.class, options);
 
   @Override
-  public Booking Start(String name) {
+  public Booking start(String name) {
     // Configure SAGA to run compensation activities in parallel
 
     ResettableSaga saga = new ResettableSaga();

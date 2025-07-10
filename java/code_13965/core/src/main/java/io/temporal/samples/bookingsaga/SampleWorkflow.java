@@ -8,5 +8,5 @@ import io.temporal.workflow.WorkflowMethod;
 public interface SampleWorkflow {
 
   @WorkflowMethod
-  Booking Start(String name);
+  Booking start(String name);
 }

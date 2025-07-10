@@ -3,6 +3,7 @@ package io.temporal.samples;
 import io.temporal.client.WorkflowClient;
 import io.temporal.samples.bookingsaga.SampleWorkflowImpl;
 import io.temporal.samples.cancel_signal.SampleWorkflowSignalImpl;
+import io.temporal.samples.untyped_sample.SampleWorkflowUntypedImpl;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.WorkerFactory;
 
@@ -25,6 +26,7 @@ public class Worker {
     //    worker.registerWorkflowImplementationTypes(SampleWorkflowSignalImpl.class);
     worker.registerWorkflowImplementationTypes(SampleWorkflowImpl.class);
     worker.registerWorkflowImplementationTypes(SampleWorkflowSignalImpl.class);
+    worker.registerWorkflowImplementationTypes(SampleWorkflowUntypedImpl.class);
 
     // Activities are stateless and thread safe. So a shared instance is used.
     Activities activities = new ActivitiesImpl();
