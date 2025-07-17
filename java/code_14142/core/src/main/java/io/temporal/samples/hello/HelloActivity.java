@@ -47,7 +47,8 @@ public class HelloActivity {
             GreetingActivities.class,
             ActivityOptions.newBuilder()
                 .setStartToCloseTimeout(Duration.ofSeconds(2))
-                .setContextPropagators(Collections.singletonList(new MDCContextPropagator()))
+                //                .setContextPropagators(Collections.singletonList(new
+                // MDCContextPropagator()))
                 .build());
 
     @Override
@@ -100,7 +101,7 @@ public class HelloActivity {
             GreetingWorkflow.class,
             WorkflowOptions.newBuilder()
                 .setWorkflowId(WORKFLOW_ID)
-                .setContextPropagators(contextPropagators)
+                //                .setContextPropagators(contextPropagators)
                 .setTaskQueue(TASK_QUEUE)
                 .build());
 
