@@ -2,6 +2,7 @@ import asyncio
 from dataclasses import dataclass
 from datetime import timedelta
 
+import ddtrace
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
@@ -93,6 +94,7 @@ async def main():
     # runtime = init_runtime_with_telemetry()
 
     init_tracer("hello_activity")
+    ddtrace.patch()
 
     # Start client
     client = await Client.connect("localhost:7233",
