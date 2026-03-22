@@ -1,262 +1,131 @@
-# Temporal Go SDK samples
+# Requester Use Case
 
-[![FOSSA Status](https://app.fossa.com/api/projects/custom%2B18405%2Fgithub.com%2Ftemporalio%2Fsamples-go.svg?type=shield)](https://app.fossa.com/projects/custom%2B18405%2Fgithub.com%2Ftemporalio%2Fsamples-go?ref=badge_shield)
+A Temporal Go sample demonstrating a scheduler workflow pattern for managing concurrent and sequential request processing across modules.
 
-This repository contains several sample Workflow applications that demonstrate the various capabilities of the Temporal
-Server via the Temporal Go SDK.
+## Overview
 
-- Temporal Server repo: [temporalio/temporal](https://github.com/temporalio/temporal)
-- Temporal Go SDK repo: [temporalio/sdk-go](https://github.com/temporalio/sdk-go)
-- Go SDK docs: [docs.temporal.io/dev-guide/go](https://docs.temporal.io/dev-guide/go)
+This sample implements a pattern where incoming requests are grouped by module (LZ) and processed with the following rules:
 
-## How to use
+- **Intra-module requests** (same `ModuleID`) are processed **sequentially**
+- **Inter-module requests** (different `ModuleID`) are processed **concurrently**
 
-- Or run Temporal Server locally with [VSCode Remote Containers](https://code.visualstudio.com/docs/remote/containers)
-  . [![Open in Remote - Containers](https://img.shields.io/static/v1?label=Remote%20-%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/temporalio/samples-go)
-- Lastly, you can run Temporal Server locally on your own (follow
-   [these instructions](https://learn.temporal.io/getting_started/go/dev_environment/)), then clone this repository
-
-The [helloworld](./helloworld) sample is a good place to start.
+### Architecture
 
-## Samples directory
+```
+HTTP POST /signal
+        │
+        ▼
+   Starter (HTTP server)
+        │  SignalWithStartWorkflow (per-LZ)
+        ▼
+RequesterSchedulerWorkflow
+        │  routes by ModuleID
+        ├──► Module A ──► LZRequestWorkflow ──► Activity
+        ├──► Module B ──► LZRequestWorkflow ──► Activity
+        └──► Module C ──► LZRequestWorkflow ──► Activity
+```
 
-Each sample demonstrates one feature of the SDK, together with tests.
+- The **starter** runs an HTTP server on `:8080` that accepts `POST /signal` requests and uses `SignalWithStartWorkflow` to deliver them to a per-LZ scheduler workflow.
+- The **`RequesterSchedulerWorkflow`** receives signals, routes each request to the appropriate `Module` by `ModuleID`, and manages completion.
+- Each **`Module`** processes its requests sequentially by executing `LZRequestWorkflow` as a child workflow for each request.
+- The **`LZRequestWorkflow`** runs an `Activity` that simulates work (30 seconds with heartbeating).
+- The scheduler workflow completes when all in-flight requests finish and no new requests arrive within 30 seconds.
 
-- [**Basic hello world**](./helloworld): Simple example of a Workflow
-  Definition and an Activity Definition.
+## Running the Sample
 
-- [**Basic mTLS hello world**](./helloworldmtls): Simple example of a
-  Workflow Definition and an Activity Definition using mTLS like Temporal Cloud.
-
-- [**Dynamic mTLS hello world**](./dynamicmtls): Simple example showing how to refresh mTLS credentials. This allows for credentials to be refreshed without restarting the worker.
-
-- [**Basic apiKey hello world**](./helloworld-apiKey): Simple example of a
-Workflow Definition and an Activity Definition using API Key to authenticate with Temporal Cloud.
-
-- [**Basic external environment configuration**](./external-env-conf): Simple example showing how to configure a client
-with an external configuration file, like TOML, decoupling connection settings from application code.
-
-- [**Standalone Activities**](standalone-activity/helloworld): Demonstrates how standalone activities work, where activities
-  can be called from the client directly and not wrapped in an activity.
-### API demonstrations
-
-- **Async activity completion**: Example of
-  an [Expense reporting](./expense) Workflow that communicates with a
-  server API. Additional
-  documentation: [How to complete an Activity Execution asynchronously in Go](https://docs.temporal.io/application-development/foundations/#develop-activities)
+### Prerequisites
 
-- [**Retry Activity Execution**](./retryactivity): This sample
-  executes an unreliable Activity. The Activity is executed with a custom Retry Policy. If the Activity Execution fails,
-  the Server will schedule a retry based on the Retry Policy. This Activity also includes a Heartbeat, which enables it
-  to resume from the Activity Execution's last reported progress when it retries.
+- Go 1.23+
+- A running Temporal server
 
-- [**Child Workflow**](./child-workflow): Demonstrates how to use
-  execute a Child Workflow from a Parent Workflow Execution. A Child Workflow Execution only returns to the Parent
-  Workflow Execution after completing its last Run.
+Start the Temporal dev server in a terminal:
 
-- [**Child Workflow with ContinueAsNew**](./child-workflow-continue-as-new): Demonstrates
-  that the call to Continue-As-New, by a Child Workflow Execution, is *not visible to the parent*. The Parent Workflow
-  Execution receives a notification only when a Child Workflow Execution completes, fails or times out. This is a useful
-  feature when there is a need to **process a large set of data**. The child can iterate over the data set calling
-  Continue-As-New periodically without polluting the parents' history.
+```bash
+temporal server start-dev
+```
 
-- [**Cancellation**](./cancellation): Demonstrates how to cancel a
-  Workflow Execution by calling `CancelWorkflow`, and how to defer an Activity Execution that "cleans up" after the
-  Workflow Execution has been cancelled.
+You should see output like:
 
-- **Coroutines**: Do not use native `go` routines in Workflows. Instead use Temporal coroutines (`workflow.Go()`) to
-  maintain a [deterministic](https://docs.temporal.io/application-development/foundations/#develop-workflows) Workflow. Can be
-  seen in the [Goroutine](./goroutine)
-  , [DSL](./dsl)
-  , [Recovery](./recovery)
-  , [PSO](./pso) Workflow examples.
+```
+CLI 1.5.1 (Server 1.29.1, UI 2.42.1)
 
-- [**Cron Workflow**](./cron): Demonstrates a recurring Workflow
-  Execution that occurs according to a cron schedule. This sample showcases the `HasLastCompletionResult` and
-  `GetLastCompletionResult` APIs which are used to pass information between executions. **Note that we recommend
-  using Schedules instead of Cron Jobs.**
-  Additional documentation: [What is a Temporal Cron Job?](https://docs.temporal.io/docs/content/what-is-a-temporal-cron-job).
+Server:  localhost:7233
+UI:      http://localhost:8233
+Metrics: http://localhost:57058/metrics
+```
 
-- [**Schedule Workflow**](./schedule): Demonstrates a recurring Workflow
-  Execution that occurs according to a schedule.
-  documentation: [Schedule](https://docs.temporal.io/workflows#schedule).
+### 1. Start the Worker
 
-- [**Encryption**](./encryption): How to use encryption for
-  Workflow/Activity data with the DataConverter API. Also includes an example of stacking encoders (in this case
-  encryption and compression)
+In a second terminal:
 
-- [**Codec Server**](./codec-server): Demonstrates using a codec
-  server to decode payloads for display in Temporal CLI and Temporal Web. This setup can be used for any kind of codec, common
-  examples are compression or encryption.
+```bash
+go run helloworld/worker/main.go
+```
 
-- [**Query Example**](./query): Demonstrates how to Query the state
-  of a single Workflow Execution using the `QueryWorkflow` and `SetQueryHandler` APIs. Additional
-  documentation: [How to Query a Workflow Execution in Go](https://docs.temporal.io/application-development/features/#queries).
+Expected output:
 
-- **Selectors**: Do not use the native Go `select` statement. Instead
-  use [Go SDK Selectors](https://docs.temporal.io/docs/go/selectors) (`selector.Select(ctx)`) to maintain
-  a [deterministic](https://docs.temporal.io/application-development/foundations/#develop-workflows) Workflow. Can be seen in
-  the [Pick First](./pickfirst)
-  , [Mutex](./mutex)
-  , [DSL](./dsl),
-  and [Timer](./timer) examples.
+```
+2025/12/22 15:00:15 INFO  No logger configured for temporal client. Created default one.
+2025/12/22 15:00:16 INFO  Started Worker Namespace default TaskQueue hello-world WorkerID 82087
+```
 
-- **Sessions**: Demonstrates how to bind a set of Activity Executions to a specific Worker after the first Activity
-  executes. This feature is showcased in
-  the [File Processing example](./fileprocessing). Addition
-  documentation: [How to use Sessions in Go](https://docs.temporal.io/tasks/#sessions).
+### 2. Start the HTTP Server (Starter)
 
-- **Signals**: Can be seen in the [Recovery](./recovery)
-  and [Mutex](./mutex) examples. Additional
-  documentation: [eCommerce application tutorial](https://learn.temporal.io/tutorials/go/ecommerce/)
-  , [How to send Signals](https://docs.temporal.io/sending-messages#sending-signals)
-  , [How to handle Signals](https://docs.temporal.io/handling-messages)
-  .
+In a third terminal:
 
-- [**Memo**](./memo): Demonstrates how to use Memo that can be used
-  to store any kind of data.
+```bash
+go run helloworld/starter/main.go
+```
 
-- [**Search Attributes**](./searchattributes): Demonstrates how to
-  use custom Search Attributes that can be used to find Workflow Executions using predicates.
+Expected output:
 
-- [**Timer Futures**](./timer): The sample starts a long running
-  order processing operation and starts a Timer (`workflow.NewTimer()`). If the processing time is too long, a
-  notification email is "sent" to the user regarding the delay (the execution does not cancel). If the operation
-  finishes before the Timer fires, then the Timer is cancelled.
+```
+2025/12/22 15:07:24 Listening on :8080
+```
 
-- [**Tracing and Context Propagation**](./ctxpropagation):
-  Demonstrates the client initialization with a context propagator, which propagates specific information in
-  the `context.Context` object across the Workflow Execution. The `context.Context` object is populated with information
-  prior to calling `StartWorkflow`. This example demonstrates that the information is available in the Workflow
-  Execution and Activity Executions. Additional
-  documentation: [How to use tracing in Go](https://docs.temporal.io/go/tracing).
+### 3. Send Requests
 
-- [**OpenTelemetry**](./opentelemetry): Demonstrates how to instrument the Workflows and
-  Activities with OpenTelemetry.
+Send requests via HTTP POST to `/signal`. Each request must include `LZ`, `ModuleID`, and `RequestID` fields:
 
-- [**Updatable Timer**](./updatabletimer): Demonstrates timer
-  cancellation and use of a Selector to wait on a Future and a Channel simultaneously.
+```bash
+# Two requests for the same LZ but different modules — processed concurrently
+curl -X POST http://localhost:8080/signal \
+  -H "Content-Type: application/json" \
+  -d '{"LZ": "us-east-1", "ModuleID": "module-a", "RequestID": "req-1"}'
 
-- [**Greetings**](./greetings): Demonstrates how to pass dependencies
-  to activities defined as struct methods.
+curl -X POST http://localhost:8080/signal \
+  -H "Content-Type: application/json" \
+  -d '{"LZ": "us-east-1", "ModuleID": "module-b", "RequestID": "req-2"}'
 
-- [**Greetings Local**](./greetingslocal): Demonstrates how to pass
-  dependencies to local activities defined as struct methods.
-
-- [**Logging Interceptor**](./logger-interceptor): Demonstrates how to use
-  interceptors to intercept calls, in this case for adding context to the logger.
-
-- [**Workflow Security Interceptor**](./workflow-security-interceptor): Demonstrates how to use
-  interceptors to intercept child workflow calls, in this case for validating their type.
-
-- [**Update**](./update): Demonstrates how to create a workflow that reacts
-  to workflow update requests.
-
-- [**Eager Workflow Start**](./eager-workflow-start): Demonstrates how to start a workflow in eager mode, an experimental latency optimization.
-
-### Dynamic Workflow logic examples
-
-These samples demonstrate some common control flow patterns using Temporal's Go SDK API.
-
-- [**Dynamic Workflows**](./dynamic-workflows): Demonstrates how to execute Workflows and Activities dynamically,
-  using a single "Dynamic Workflow"
-
-- [**Dynamic Execution**](./dynamic): Demonstrates how to execute
-  Workflows and Activities using a name rather than a strongly typed function.
-
-- [**Branching Activities**](./branch): Executes multiple Activities
-  in parallel. The number of branches is controlled by a parameter that is passed in at the start of the Workflow
-  Execution.
-
-- [**Exclusive Choice**](./choice-exclusive): Demonstrates how to
-  execute Activities based on a dynamic input.
-
-- [**Multi-Choice**](./choice-multi): Demonstrates how to execute
-  multiple Activities in parallel based on a dynamic input.
-
-- [**Mutex Workflow**](./mutex): Demonstrates the ability to
-  lock/unlock a particular resource within a particular Temporal Namespace. In this examples the other Workflow
-  Executions within the same Namespace wait until a locked resource is unlocked. This shows how to avoid race conditions
-  or parallel mutually exclusive operations on the same resource.
-
-- [**Goroutine Workflow**](./goroutine): This sample executes
-  multiple sequences of activities in parallel using the `workflow.Go()` API.
-
-- [**Pick First**](./pickfirst): This sample executes Activities in
-  parallel branches, picks the result of the branch that completes first, and then cancels other Activities that have
-  not finished.
-
-- [**Split/Merge Future**](./splitmerge-future): Demonstrates how to
-  use futures to await completion of multiple activities invoked in parallel. This sample processes chunks of a
-  large work item in parallel, and then merges the intermediate results to generate the final result.
-
-- [**Split/Merge Selector**](./splitmerge-selector): Demonstrates how
-  to use Selector to process activity results as soon as they become available. This sample processes chunks of a
-  large work item in parallel, and then merges the intermediate results to generate the final result.
-
-- [**Synchronous Proxy Workflow pattern**](./synchronous-proxy): This
-  sample demonstrates a synchronous interaction with a "main" Workflow Execution from a "proxy" Workflow Execution. The
-  proxy Workflow Execution sends a Signal to the "main" Workflow Execution, then blocks, waiting for a Signal in
-  response.
-
-- [**Saga pattern**](./saga): This sample demonstrates how to implement
-  a saga pattern using golang defer feature.
-
-- [**Await for signal processing**](./await-signals): Demonstrates how
-  to process out of order signals processing using `Await` and `AwaitWithTimeout`.
-
-- [**Worker-specific Task Queues**](./worker-specific-task-queues): Use a unique task queue per Worker to have certain Activities only run on that specific Worker. For instance for a file processing Workflow, where one Activity downloads a file and subsequent Activities need to operate on that file. (If multiple Workers were on the same queue, subsequent Activities may get run on different machines that don't have the downloaded file.)
-
-- [**Nexus**](./nexus): Demonstrates how to use the Nexus APIs to facilitate cross namespace calls.
-
-- [**Nexus Cancelation**](./nexus-cancelation): Demonstrates how to cancel a Nexus operation from a caller workflow.
-
-- [**Nexus Context Propagation**](./nexus-context-propagation): Demonstrates how to propagate context through client calls, workflows, and Nexus headers.
-
-### Scenario based examples
-
-- [**Safe Message Handler**](./safe_message_handler): This demonstrates how to safely handle concurrent update and signal requests.
-
-- [**DSL Workflow**](./dsl): Demonstrates how to implement a
-  DSL-based Workflow. This sample contains 2 yaml files that each define a custom "workflow" which instructs the
-  Temporal Workflow. This is useful if you want to build in a "low code" layer.
-
-- [**Expense Request**](./expense): This demonstrates how to process
-  an expense request. This sample showcases how to complete an Activity Execution asynchronously.
-
-- [**File Processing**](./fileprocessing): Demonstrates how to
-  download and process a file using set of Activities that run on the same host. Activities are executed to download a
-  file from the web, store it locally on the host, and then "process it". This sample showcases how to handle a
-  scenario where all subsequent Activities need to execute on the same host as the first Activity in the sequence. In
-  Go, this is achieved by using the Session APIs.
-
-- [**Particle Swarm Optimization**](./pso): Demonstrates how to
-  perform a long iterative math optimization process using particle swarm optimization (PSO). This sample showcases the
-  use of parallel executions, `ContinueAsNew` for long histories, a Query API, and the use of a custom `DataConverter`
-  for serialization.
-
-- [**Polling Services**](./polling): Recommended implementation of an activity that needs to periodically poll an external
-resource waiting for its successful completion
-
-- [**Prometheus Metrics**](./metrics): Demonstrates how to instrument
-  Temporal with Prometheus and Uber's Tally library.
-
-- [**Request/Response with Response Activities**](./reqrespactivity):
-  Demonstrates how to accept requests via signals and use callback activities to push responses.
-
-- [**Request/Response with Response Queries**](./reqrespquery):
-  Demonstrates how to accept requests via signals and use queries to poll for responses.
-
-- [**Request/Response with Response Updates**](./reqrespupdate):
-  Demonstrates how to accept requests and respond via updates.
-
-- [**Early-Return**](./early-return):
-  Demonstrates how to receive a response mid-workflow, while the workflow continues to run to completion.
-
-- [**Worker Versioning**](./worker-versioning):
-  Demonstrates how to use worker versioning to manage workflow code changes.
-
-### Fixtures
-
-These are edge case examples useful for Temporal internal development and bug
-reporting. [See their readme for more details](./temporal-fixtures).
+# Two requests for the same LZ and same module — processed sequentially
+curl -X POST http://localhost:8080/signal \
+  -H "Content-Type: application/json" \
+  -d '{"LZ": "us-east-1", "ModuleID": "module-a", "RequestID": "req-3"}'
+```
+
+A `202 Accepted` response indicates the request was successfully queued.
+
+## Key Concepts
+
+| Concept | Description |
+|---|---|
+| `SignalWithStartWorkflow` | Starts the scheduler workflow if not running, then signals it — idempotent per LZ |
+| Per-LZ scheduler | One `RequesterSchedulerWorkflow` runs per LZ, identified by `requester-scheduler-scheduler-{LZ}` |
+| Module isolation | Each unique `ModuleID` gets its own `Module` with a sequential processing queue |
+| Child workflows | Each individual request is executed as a `LZRequestWorkflow` child workflow |
+| Idle timeout | Scheduler completes after 30 seconds of inactivity (no new requests) |
+| Activity heartbeating | The `Activity` heartbeats every second during its 30-second execution |
+
+## Project Structure
+
+```
+helloworld/
+├── scheduler/
+│   ├── module.go        # Module type: per-ModuleID sequential queue
+│   ├── registration.go  # Registration: routes requests, tracks completion
+│   └── workflows.go     # RequesterSchedulerWorkflow, LZRequestWorkflow, Activity
+├── starter/
+│   └── main.go          # HTTP server; signals workflows via SignalWithStartWorkflow
+└── worker/
+    └── main.go          # Temporal worker; registers workflows and activities
+```

@@ -35,7 +35,6 @@ func (r *Registration) Process(ctx workflow.Context) error {
 	selector.AddReceive(r.allFutureQueue, func(c workflow.ReceiveChannel, _ bool) {
 		var fut workflow.ChildWorkflowFuture
 		c.Receive(ctx, &fut)
-
 		selector.AddFuture(fut, func(f workflow.Future) {
 			r.lastFuture = fut
 			r.requestCount--
