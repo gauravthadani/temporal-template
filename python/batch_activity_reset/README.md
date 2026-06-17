@@ -2,6 +2,12 @@
 
 ## Run
 
+Install dependencies:
+
+```bash
+uv sync
+```
+
 Start Temporal local:
 
 ```bash
