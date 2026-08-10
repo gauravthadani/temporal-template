@@ -1,0 +1,21 @@
+# venvs and caches
+.venvs/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# run artifacts (logs, csvs, pid files)
+results/
+
+# intermediate render (regenerated from REPORT.md)
+REPORT.html
+
+# infra scaffolding kept out of the shared repro
+# (private / not part of the reproducer itself)
+auto/
+dashboards/
+docker-compose.yml
+prometheus/
+temporal-certs/
